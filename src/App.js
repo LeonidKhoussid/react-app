@@ -18,6 +18,7 @@ const movie1 = {
 
 const App = () => {
   const [movies, setMovies] = React.useState([]);
+  const [searchTimeout, setSearchTimeout] = React.useState(null);
   const [searchValue, setSearchValue] = React.useState("");
 
   const searchMovies = async (title) => {
@@ -26,22 +27,26 @@ const App = () => {
     setMovies(data.Search);
   };
 
-  React.useEffect(() => {
-    searchMovies("Spiderman");
-  }, []);
+  const debounce = React.useCallback(
+    (value) => {
+      clearTimeout(searchTimeout);
 
-  const handleSearchChange = React.useCallback(({ target: { value } }) => {
-    setSearchValue(value);
+      setSearchTimeout(
+        setTimeout(() => {
+          searchMovies(value);
+        }, 2000)
+      );
+    },
+    [searchTimeout]
+  );
 
-    // make API/AJAX request to imdb and fetch and set movies
-   const response = axios.get('<url to img>');
-   console.log(response;)
-
-   // why does resposne not print
-   // hot do i pull out the movies from the response
-   // how do i set the movies to state
-   // how do i render the movies to the screen
-  }, []);
+  const handleSearchChange = React.useCallback(
+    ({ target: { value } }) => {
+      setSearchValue(value);
+      debounce(value);
+    },
+    [searchTimeout, debounce]
+  );
 
   return (
     <AppContainer>
@@ -63,7 +68,7 @@ const App = () => {
       {movies?.length > 0 ? (
         <div className="container">
           {movies.map((movie) => (
-            <movieCard movie={movie} />
+            <MovieCard movie={movie} />
           ))}
         </div>
       ) : (
